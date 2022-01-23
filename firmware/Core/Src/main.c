@@ -70,6 +70,44 @@ static void MX_TIM3_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+int kx022_readregs(int addr, uint8_t * data, int len) {
+  int status = HAL_I2C_Mem_Read(&hi2c2, KX022_I2C_ADDRESS, addr, I2C_MEMADD_SIZE_8BIT, data, len, 10000);
+  if (status != HAL_OK)
+    return 1;
+  else
+    return 0;
+}
+
+int kx022_writeregs(int addr, uint8_t * data, int len) {
+  int status =  HAL_I2C_Mem_Write(&hi2c2, (uint16_t)KX022_I2C_ADDRESS, addr, I2C_MEMADD_SIZE_8BIT, (uint8_t *)data, len, 10000);
+  if (status != HAL_OK)
+    return 1;
+  else
+    return 0;
+}
+
+int16_t kx022_getAccAxis(uint8_t addr) {
+    int16_t acc;
+    uint8_t res[2];
+ 
+    kx022_readregs(addr, res, 2);
+    acc = ((res[1] << 8) | res[0]);
+    return acc;
+}
+
+int16_t kx022_getAccX() {
+    return (kx022_getAccAxis(KX022_XOUT_L));
+}
+ 
+int16_t kx022_getAccY() {
+    return (kx022_getAccAxis(KX022_YOUT_L));
+}
+ 
+int16_t kx022_getAccZ() {
+    return (kx022_getAccAxis(KX022_ZOUT_L));
+}
+
+
 void test_measure_light(void) {
   ADC_ChannelConfTypeDef sConfig = {0};
   char buffer[32] = { 0 };
@@ -99,6 +137,17 @@ void test_measure_light(void) {
 
   sprintf(buffer, "LIGHT %d\r\n", uhADCxConvertedValue);
   HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), HAL_MAX_DELAY);
+}
+
+void test_accelerometer(void) {
+    char buffer[32] = { 0 };
+    int32_t accx = kx022_getAccX();
+    int32_t accy = kx022_getAccY();
+    int32_t accz = kx022_getAccZ();
+
+    sprintf(buffer, "X/Y/Z %ld/%ld/%ld\r\n", accx, accy, accz);
+    
+    HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), HAL_MAX_DELAY);
 }
 
 /*
@@ -137,44 +186,9 @@ void gradual() {
     
   }
 }
-
-int kx022_readregs(int addr, uint8_t * data, int len) {
-  int status = HAL_I2C_Mem_Read(&hi2c2, KX022_I2C_ADDRESS, addr, I2C_MEMADD_SIZE_8BIT, data, len, 10000);
-  if (status != HAL_OK)
-    return 1;
-  else
-    return 0;
-}
-
-int kx022_writeregs(int addr, uint8_t * data, int len) {
-  int status =  HAL_I2C_Mem_Write(&hi2c2, (uint16_t)KX022_I2C_ADDRESS, addr, I2C_MEMADD_SIZE_8BIT, (uint8_t *)data, len, 10000);
-  if (status != HAL_OK)
-    return 1;
-  else
-    return 0;
-}
-
-int16_t kx022_getAccAxis(uint8_t addr) {
-    int16_t acc;
-    uint8_t res[2];
- 
-    kx022_readregs(addr, res, 2);
-    acc = ((res[1] << 8) | res[0]);
-    return acc;
-}
-
-float kx022_getAccX() {
-    return ((float)(kx022_getAccAxis(KX022_XOUT_L))/16384);
-}
- 
-float kx022_getAccY() {
-    return ((float)(kx022_getAccAxis(KX022_YOUT_L))/16384);
-}
- 
-float kx022_getAccZ() {
-    return ((float)(kx022_getAccAxis(KX022_ZOUT_L))/16384);
-}
 */
+
+
 
 void accel_start() {
     unsigned char buf = 0x0;
@@ -228,9 +242,17 @@ int main(void)
   __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 0); //green
   accel_start();
 
-  // Test illumination sensor
+
+// Test/debug illumination sensor
+#if 0
   while (1) { test_measure_light(); }
-  
+#endif
+
+// Test/debug accelerometer
+//#if 0
+  while (1) { test_accelerometer(); }
+//#endif
+
 
   while (1)
   {
