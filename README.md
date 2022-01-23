@@ -6,6 +6,6 @@ Read ERRATA first, if you want to make your own!
 
 ![v1 prototype](https://github.com/nuclearcat/opensourcetorch/blob/master/SMARTLIGHT.png?raw=true)
 
-* ERRATA in v1.0
-**  32Khz oscillator on MCU not starting reliably. Might be software issue.
+ERRATA in v1.0   
+* 32Khz oscillator on MCU not starting reliably. Might be software issue.
   
