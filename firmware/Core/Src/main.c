@@ -146,8 +146,33 @@ void test_accelerometer(void) {
     int32_t accz = kx022_getAccZ();
 
     sprintf(buffer, "X/Y/Z %ld/%ld/%ld\r\n", accx, accy, accz);
-    
     HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), HAL_MAX_DELAY);
+    HAL_Delay(1);
+}
+
+void feature_light_down(void) {
+    int32_t accx = kx022_getAccX();
+    int32_t accy = kx022_getAccY();
+    int32_t accz = kx022_getAccZ();
+    int32_t absx;
+    if (accx < 0)
+        absx = accx * -1;
+    else
+        absx = accx;
+    
+
+    if (accz < -10000 && absx < 10000) {
+         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 70);
+         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 70);
+         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 70);
+    } else {
+         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0);
+         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 0);
+         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 0);
+    }
+
+
+
 }
 
 /*
@@ -242,17 +267,21 @@ int main(void)
   __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 0); //green
   accel_start();
 
-
+  HAL_UART_Transmit(&huart2, "BOOT\r\n", 6, HAL_MAX_DELAY);
 // Test/debug illumination sensor
 #if 0
   while (1) { test_measure_light(); }
 #endif
 
 // Test/debug accelerometer
-//#if 0
+#if 0
   while (1) { test_accelerometer(); }
-//#endif
+#endif
 
+// Feature: turn on RGB light only when light looks downwards
+//#if 0
+  while (1) { feature_light_down(); }
+//#endif
 
   while (1)
   {
