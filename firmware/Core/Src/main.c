@@ -162,9 +162,9 @@ void feature_light_down(void) {
     
 
     if (accz < -10000 && absx < 10000) {
-         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 70);
-         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 70);
-         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 70);
+         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 700);
+         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 700);
+         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 700);
     } else {
          __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0);
          __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 0);
@@ -194,24 +194,23 @@ void police() {
     
     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 0);
 }
-
-#define GRADUAL_MAXBRI 60
-void gradual() {
+*/
+#define GRADUAL_MAXBRI 600
+void test_slow_glow() {
   for (int i=0; i<GRADUAL_MAXBRI; i++) {
-    HAL_Delay(15);
+    HAL_Delay(5);
     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, i);
     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, i);
     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, i);
   }
   for (int i=0; i<GRADUAL_MAXBRI; i++) {
-    HAL_Delay(15);
+    HAL_Delay(5);
     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, GRADUAL_MAXBRI-i);
     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, GRADUAL_MAXBRI-i);
     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, GRADUAL_MAXBRI-i);
     
   }
 }
-*/
 
 
 
@@ -278,10 +277,16 @@ int main(void)
   while (1) { test_accelerometer(); }
 #endif
 
-// Feature: turn on RGB light only when light looks downwards
+// Test: slow glow (brightness change)
 //#if 0
-  while (1) { feature_light_down(); }
+  while (1) { test_slow_glow(); }
 //#endif
+
+
+// Feature: turn on RGB light only when light looks downwards
+#if 0
+  while (1) { feature_light_down(); }
+#endif
 
   while (1)
   {
@@ -623,9 +628,9 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 640;
+  htim3.Init.Prescaler = 64;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 100;
+  htim3.Init.Period = 1000;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
